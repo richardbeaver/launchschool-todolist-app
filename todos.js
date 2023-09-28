@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const session = require('express-session');
 const flash = require('express-flash');
 const store = require('connect-loki');
+const todoLists = require('./lib/seed-data');
 
 const HOST = 'localhost';
 const PORT = 3000;
@@ -51,9 +52,7 @@ app.use((req, res, next) => {
 // ======================
 
 app.get('/', (_req, res) => {
-  res.render('layout', {
-    message: 'Hello world',
-  });
+  res.render('lists', { todoLists });
 });
 
 // Error handler
