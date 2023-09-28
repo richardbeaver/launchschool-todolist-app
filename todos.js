@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const session = require('express-session');
 const flash = require('express-flash');
 const store = require('connect-loki');
+const TodoList = require('./lib/todolist');
 const { sortTodoLists, sortTodos } = require('./lib/sort');
 
 const todoLists = require('./lib/seed-data');
@@ -53,11 +54,28 @@ app.use((req, res, next) => {
 // ======================
 // ======================
 
-// Render the sorted list of todo lists
+// Redirect start page
 app.get('/', (_req, res) => {
+  res.redirect('/lists');
+});
+
+// Render the list of todo lists
+app.get('/lists', (_req, res) => {
   res.render('lists', {
     todoLists: sortTodoLists(todoLists),
   });
+});
+
+// Render the new todo list page
+app.get('/lists/new', (_req, res) => {
+  res.render('new-list');
+});
+
+// Create a new todo list
+app.post('/lists', (req, res) => {
+  const title = req.body.todoListTitle.trim();
+  todoLists.push(new TodoList(title));
+  res.redirect('/lists');
 });
 
 // Error handler
