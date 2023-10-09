@@ -1,40 +1,42 @@
-const express = require('express');
-const morgan = require('morgan');
-const { body, validationResult } = require('express-validator');
-const session = require('express-session');
-const flash = require('express-flash');
-const store = require('connect-loki');
-const TodoList = require('./lib/todolist');
-const { sortTodoLists, sortTodos } = require('./lib/sort');
+const express = require("express");
+const morgan = require("morgan");
+const { body, validationResult } = require("express-validator");
+const session = require("express-session");
+const flash = require("express-flash");
+const store = require("connect-loki");
+const TodoList = require("./lib/todolist");
+const { sortTodoLists, sortTodos } = require("./lib/sort");
 
-const todoLists = require('./lib/seed-data');
+const todoLists = require("./lib/seed-data");
 
-const HOST = 'localhost';
+const HOST = "localhost";
 const PORT = 3000;
 
 const app = express();
 const LokiStore = store(session);
 
-app.set('views', './views');
-app.set('view engine', 'pug');
+app.set("views", "./views");
+app.set("view engine", "pug");
 
-app.use(morgan('common'));
-app.use(express.static('public'));
+app.use(morgan("common"));
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 
-app.use(session({
-  cookie: {
-    httpOnly: true,
-    maxAge: 31 * 24 * 60 * 60 * 1000, // 31 days in millseconds
-    path: '/',
-    secure: false,
-  },
-  name: 'launch-school-todos-session-id',
-  resave: false,
-  saveUninitialized: true,
-  secret: 'this is not very secure',
-  store: new LokiStore({}),
-}));
+app.use(
+  session({
+    cookie: {
+      httpOnly: true,
+      maxAge: 31 * 24 * 60 * 60 * 1000, // 31 days in millseconds
+      path: "/",
+      secure: false,
+    },
+    name: "launch-school-todos-session-id",
+    resave: false,
+    saveUninitialized: true,
+    secret: "this is not very secure",
+    store: new LokiStore({}),
+  })
+);
 
 app.use(flash());
 
@@ -55,27 +57,27 @@ app.use((req, res, next) => {
 // ======================
 
 // Redirect start page
-app.get('/', (_req, res) => {
-  res.redirect('/lists');
+app.get("/", (_req, res) => {
+  res.redirect("/lists");
 });
 
 // Render the list of todo lists
-app.get('/lists', (_req, res) => {
-  res.render('lists', {
+app.get("/lists", (_req, res) => {
+  res.render("lists", {
     todoLists: sortTodoLists(todoLists),
   });
 });
 
 // Render the new todo list page
-app.get('/lists/new', (_req, res) => {
-  res.render('new-list');
+app.get("/lists/new", (_req, res) => {
+  res.render("new-list");
 });
 
 // Create a new todo list
-app.post('/lists', (req, res) => {
+app.post("/lists", (req, res) => {
   const title = req.body.todoListTitle.trim();
   todoLists.push(new TodoList(title));
-  res.redirect('/lists');
+  res.redirect("/lists");
 });
 
 // Error handler
