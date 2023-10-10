@@ -56,6 +56,12 @@ app.use((req, res, next) => {
 // ======================
 // ======================
 
+// Find a todo list with the indicated numeric ID. Returns `undefined` if
+// not found
+const loadTodoList = (todoListId) => {
+  return todoLists.find((todoList) => todoList.id === todoListId);
+};
+
 // Redirect start page
 app.get("/", (_req, res) => {
   res.redirect("/lists");
@@ -104,6 +110,20 @@ app.post(
     }
   }
 );
+
+// Render individual todo list and its todos
+app.get("/lists/:todoListId", (req, res, next) => {
+  const { todoListId } = req.params;
+  const todoList = loadTodoList(+todoListId);
+  if (todoList === undefined) {
+    next(new Error("Not found."));
+  } else {
+    res.render("list", {
+      todoList: todoList,
+      todos: sortTodos(todoList),
+    });
+  }
+});
 
 // Error handler
 app.use((err, _req, res, _next) => {
