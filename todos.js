@@ -76,12 +76,32 @@ app.get("/lists/new", (_req, res) => {
 // Create a new todo list
 app.post("/lists", (req, res) => {
   const title = req.body.todoListTitle.trim();
-  todoLists.push(new TodoList(title));
-  res.redirect("/lists");
+
+  if (title.length === 0) {
+    req.flash("error", "A title was not provided.");
+    res.render("new-list", {
+      flash: req.flash(),
+    });
+  } else if (title.length > 100) {
+    req.flash("error", "List title must be between 1 and 100 characters.");
+    res.render("new-list", {
+      flash: req.flash(),
+      todoListTitle: title,
+    });
+  } else if (todoLists.some((list) => list.title === title)) {
+    req.flash("error", "List title must be unique.");
+    res.render("new-list", {
+      flash: req.flash(),
+      todoListTitle: title,
+    });
+  } else {
+    todoLists.push(new TodoList(title));
+    req.flash("success", "The todo list has been created.");
+    res.redirect("/lists");
+  }
 });
 
 // Error handler
-/* eslint-disable-next-line no-unused-vars */
 app.use((err, _req, res, _next) => {
   console.log(err);
   res.status(404).send(err.message);
