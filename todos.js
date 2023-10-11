@@ -5,6 +5,7 @@ const session = require("express-session");
 const flash = require("express-flash");
 const store = require("connect-loki");
 const TodoList = require("./lib/todolist");
+const Todo = require("./lib/todo");
 const { sortTodoLists, sortTodos } = require("./lib/sort");
 
 const todoLists = require("./lib/seed-data");
@@ -182,6 +183,42 @@ app.post("/lists/:todoListId/complete_all", (req, res, next) => {
     res.redirect(`/lists/${todoListId}`);
   }
 });
+
+// Create a new todo and add it to the specified list
+app.post(
+  "/lists/:todoListId/todos",
+  [
+    body("todoTitle")
+      .trim()
+      .isLength({ min: 1 })
+      .withMessage("The todo title is required.")
+      .isLength({ max: 100 })
+      .withMessage("Todo title must be between 1 and 100 characters."),
+  ],
+  (req, res, next) => {
+    const { todoListId } = req.params;
+    const todoList = loadTodoList(+todoListId);
+    if (!todoList) {
+      next(new Error("Not found."));
+    } else {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        errors.array().forEach((err) => req.flash("error", err.msg));
+        res.render("list", {
+          flash: req.flash(),
+          todoList,
+          todos: sortTodos(todoList),
+          todoTitle: req.body.todoTitle,
+        });
+      } else {
+        const todo = new Todo(req.body.todoTitle);
+        todoList.add(todo);
+        req.flash("success", "The todo has been created.");
+        res.redirect(`/lists/${todoListId}`);
+      }
+    }
+  }
+);
 
 // Error handler
 app.use((err, _req, res, _next) => {
