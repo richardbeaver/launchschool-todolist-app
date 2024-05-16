@@ -39,7 +39,7 @@ app.use(
 
 app.use(flash());
 
-// Set up persistent session data
+// Check for existing session data
 app.use((req, _res, next) => {
   const todoLists = [];
   if ("todoLists" in req.session) {
@@ -52,7 +52,7 @@ app.use((req, _res, next) => {
   next();
 });
 
-// Extract session info
+// Extract session flash messages
 app.use((req, res, next) => {
   res.locals.flash = req.session.flash;
   delete req.session.flash;
